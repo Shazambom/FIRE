@@ -1,6 +1,6 @@
 const express = require('express');
 const db = require('../database/database');
-const app = require('../app');
+const crypto = require('crypto');
 const router = express.Router();
 const {OAuth2Client} = require('google-auth-library');
 const CLIENT_ID = '813941670344-9el2iuapfhtvv2gd1marealcu1on6u1e.apps.googleusercontent.com';
@@ -15,43 +15,31 @@ async function verify(token, res, req) {
         audience: CLIENT_ID
     });
     const payload = ticket.getPayload();
-    //console.log(payload);
     if (payload['aud'] === CLIENT_ID) {
-        //res.send(payload['name']);
-        db.verifyUser(payload['sub'], payload['name'], function (valid, err) {
+        db.verifyUser(payload['sub'], payload['name'], req.sessionID, function (valid, err) {
             if (valid) {
                 res.send(valid);
-                req.session.regenerate(function (err) {
-                    if (err) {
-                        console.log(err);
-                    }
-                });
             } else {
-                if (err !== null) {
+                if (err) {
                     console.log(err);
-                    res.send("An error logging in occured");
+                    res.send(false);
                     req.session.destroy(function (err) {
                         if (err) {
                             console.log(err);
                         }
                     });
                 } else {
-                    db.saveUser(payload['sub'], payload['name'], function (saved, err) {
+                    db.saveUser(payload['sub'], payload['name'], payload['given_name'] + " " +payload['family_name'][0], req.sessionID, function (saved, err) {
                         if (err) {
                             console.log(err);
-                            res.send("An error creating your account occured");
+                            res.send(false);
                             req.session.destroy(function (err) {
                                 if (err) {
                                     console.log(err);
                                 }
                             });
                         } else {
-                            res.send(true);
-                            req.session.regenerate(function (err) {
-                                if (err) {
-                                    console.log(err);
-                                }
-                            });
+                            res.send(saved);
                         }
                     })
                 }
@@ -66,6 +54,8 @@ async function verify(token, res, req) {
 router.post('/', function(req, res, next) {
 
     console.log("SessionID: " + req.sessionID);
+    console.log(JSON.stringify(req.session));
+    console.log(req.session.token);
     const token = req['body']['idtoken'];
     verify(token, res, req).catch(console.error);
 

@@ -5,6 +5,7 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose');
 var session = require('express-session');
+const crypto = require('crypto')
 
 mongoose.connect('mongodb://localhost:27017/FIRE');
 
@@ -15,7 +16,10 @@ var loginRouter = require('./routes/login');
 var app = express();
 var mySession = session({
     secret: 'temp_secret',
-    cookie: {maxAge : 300000, secure: true, rolling: true}
+    cookie: {maxAge : 600000, secure: false, rolling: true},
+    genid: function (req) {
+        return crypto.randomBytes(256).toString('hex');
+    }
 });
 
 app.use(mySession);
