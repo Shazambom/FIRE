@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<style type="text/css">
+    .topcorner{
+        position:absolute;
+        top:1%;
+        right:1%;
+    }
+    .textbox {
+        height:200px;
+        width:400px;
+        font-size: 10px;
+    }
+
+</style>
+<head>
+    <meta name="google-signin-scope" content="profile email">
+    <meta name="google-signin-client_id" content="813941670344-9el2iuapfhtvv2gd1marealcu1on6u1e.apps.googleusercontent.com">
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
+    <title>Agger Path</title>
+</head>
+
+
+<body id="body">
+<div class="topcorner">
+    <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
+</div>
+<div>
+    <button name="checkToken" onclick="checkToken()">Check Token</button>
+</div>
+<div>
+    <div>Name: <input type="text" id="artName"></div>
+    <div>Content: <textarea class=textbox  id="article"></textarea></div>
+    <div>Category: <input type="text" id="category"></div>
+    <button onclick="submitArticle()">submit</button>
+    <button onclick="changeArticleCat()">set category</button>
+    <button onclick="deleteArticle()">delete article</button>
+</div>
+<script>
+    var request = require('request');
+
+
+    function onSignIn(googleUser) {
+        // Useful data for your client-side scripts:
+        var profile = googleUser.getBasicProfile();
+        //console.log('Full Name: ' + profile.getName());
+
+        // The ID token you need to pass to your backend:
+        var id_token = googleUser.getAuthResponse().id_token;
+        //console.log("ID Token: " + id_token);
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'http://localhost:3000/login');
+        xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhr.onload = function() {
+            console.log('Signed in: ' + xhr.responseText);
+        };
+        xhr.send('idtoken=' + id_token);
+    }
+    function checkToken() {
+        var xhrn = new XMLHttpRequest();
+        xhrn.open('GET', 'http://localhost:3000/users');
+        xhrn.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhrn.onload = function() {
+            alert(xhrn.responseText);
+        };
+        xhrn.send();
+    }
+    function submitArticle() {
+        var xhrn = new XMLHttpRequest();
+        xhrn.open('POST', 'http://localhost:3000/submitArticle');
+        xhrn.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhrn.onload = function() {
+            alert(xhrn.responseText);
+        };
+        xhrn.send(
+            "name="+document.getElementById('artName').value
+            + "&article="+document.getElementById('article').value
+            + "&category="+document.getElementById('category').value
+        )
+    }
+    function changeArticleCat() {
+        var xhrn = new XMLHttpRequest();
+        xhrn.open('POST', 'http://localhost:3000/changeArticleCategory');
+        xhrn.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhrn.onload = function() {
+            alert(xhrn.responseText);
+        };
+        xhrn.send(
+            "name="+document.getElementById('artName').value
+            + "&category="+document.getElementById('category').value
+        )
+    }
+    function deleteArticle() {
+        var xhrn = new XMLHttpRequest();
+        xhrn.open('POST', 'http://localhost:3000/deleteArticle');
+        xhrn.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+        xhrn.onload = function() {
+            alert(xhrn.responseText);
+        };
+        xhrn.send(
+            "name="+document.getElementById('artName').value
+        )
+    }
+
+</script>
+</body>
+</html>

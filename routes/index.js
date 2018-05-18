@@ -4,8 +4,14 @@ var router = express.Router();
 /* GET home page. */
 
 router.get('/', function(req, res, next) {
-  //res.render('index', { title: 'Express' });
-  res.sendFile('/Users/ian/WebstormProjects/FIRE/bin/login.html');
+    /*
+    db.getCategoryArticles('home', function (articles) {
+        res.render('main', {
+            articles: articles
+        });
+    });*/
+    res.render('home');
+
 });
 
 

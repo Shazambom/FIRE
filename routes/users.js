@@ -9,7 +9,11 @@ router.get('/', function(req, res, next) {
       if (err) {
         console.log(err);
       } else {
-        res.send(valid);
+        if (valid) {
+            res.send("Valid token");
+        } else {
+            res.send("Invalid token");
+        }
       }
   })
 });

@@ -5,13 +5,20 @@ var cookieParser = require('cookie-parser');
 var logger = require('morgan');
 var mongoose = require('mongoose');
 var session = require('express-session');
-const crypto = require('crypto')
+const crypto = require('crypto');
 
 mongoose.connect('mongodb://localhost:27017/FIRE');
 
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 var loginRouter = require('./routes/login');
+var submitArticleRouter = require('./routes/submitArticle');
+var changeArticleCatRouter = require('./routes/changeArticleCategory');
+var deleteArticleRouter = require('./routes/deleteArticle');
+var getArticlesRouter = require('./routes/getArticles');
+
+var adminRouter = require('./routes/admin');
+
 
 var app = express();
 var mySession = session({
@@ -25,8 +32,10 @@ var mySession = session({
 app.use(mySession);
 
 // view engine setup
+//app.use(express.static(path.join(__dirname, 'views')));
 app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'jade');
+app.engine('html', require('ejs').renderFile);
+app.set('view engine', 'html');
 
 app.use(logger('dev'));
 app.use(express.json());
@@ -37,6 +46,15 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/login', loginRouter);
+app.use('/submitArticle', submitArticleRouter);
+app.use('/changeArticleCategory', changeArticleCatRouter);
+app.use('/deleteArticle', deleteArticleRouter);
+app.use('/getArticles', getArticlesRouter);
+
+
+
+app.use('/admin', adminRouter);
+
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
@@ -54,4 +72,4 @@ app.use(function(err, req, res, next) {
   res.render('error');
 });
 
-module.exports = {app: app, session: mySession};
+module.exports = app;

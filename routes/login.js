@@ -16,20 +16,14 @@ async function verify(token, res, req) {
     });
     const payload = ticket.getPayload();
     if (payload['aud'] === CLIENT_ID) {
-        db.verifyUser(payload['sub'], payload['name'], req.sessionID, function (valid, err) {
-            if (valid) {
-                res.send(valid);
+        req.session.regenerate(function (err) {
+            if (err) {
+                console.log(err)
             } else {
-                if (err) {
-                    console.log(err);
-                    res.send(false);
-                    req.session.destroy(function (err) {
-                        if (err) {
-                            console.log(err);
-                        }
-                    });
-                } else {
-                    db.saveUser(payload['sub'], payload['name'], payload['given_name'] + " " +payload['family_name'][0], req.sessionID, function (saved, err) {
+                db.verifyUser(payload['sub'], payload['name'], req.sessionID, function (valid, err) {
+                    if (valid) {
+                        res.send(valid);
+                    } else {
                         if (err) {
                             console.log(err);
                             res.send(false);
@@ -39,10 +33,22 @@ async function verify(token, res, req) {
                                 }
                             });
                         } else {
-                            res.send(saved);
+                            db.saveUser(payload['sub'], payload['name'], payload['given_name'] + " " +payload['family_name'][0], req.sessionID, function (saved, err) {
+                                if (err) {
+                                    console.log(err);
+                                    res.send(false);
+                                    req.session.destroy(function (err) {
+                                        if (err) {
+                                            console.log(err);
+                                        }
+                                    });
+                                } else {
+                                    res.send(saved);
+                                }
+                            })
                         }
-                    })
-                }
+                    }
+                });
             }
         });
     }
@@ -54,8 +60,6 @@ async function verify(token, res, req) {
 router.post('/', function(req, res, next) {
 
     console.log("SessionID: " + req.sessionID);
-    console.log(JSON.stringify(req.session));
-    console.log(req.session.token);
     const token = req['body']['idtoken'];
     verify(token, res, req).catch(console.error);
 
