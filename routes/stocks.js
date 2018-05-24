@@ -15,7 +15,6 @@ router.get('/', function(req, res, next) {
         });
         res.render('stocks', {posts :json});
     });
-    //res.render('stocks');
 });
 
 

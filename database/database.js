@@ -140,7 +140,7 @@ module.exports = {
             } else {
                 var toReturn = [];
                 articles.forEach(function (elem) {
-                    if (elem.category !== "home" && elem.category !== "stock") {
+                    if (elem.category !== "home" && elem.category !== "stock" && elem.category !== "product") {
                         elem.body = decodeURI(elem.body);
                         toReturn.push(elem);
                     }

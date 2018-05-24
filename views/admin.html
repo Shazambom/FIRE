@@ -36,9 +36,26 @@
     <button onclick="submitArticle()">submit</button>
     <button onclick="changeArticleCat()">set category</button>
     <button onclick="deleteArticle()">delete article</button>
+    <button onclick="testArticle()">test article</button>
+    <h1>Special key words for categories</h1>
+    <article>
+        <h2>home</h2>
+        <p>"home" is a category for articles that will only populate the home page</p>
+    </article>
+    <article>
+        <h2>stock</h2>
+        <p>"stock" is a category exclusively for the stock page. We use the format here from <a href="https://www.tradingview.com/widget/symbol-overview/">tradingview.com</a>
+            to submit stocks as the body. This is a simple and easy way to change the stocks we like section.
+            Be sure to remove the previous stock before adding a new one. There is a bug where if you have more than one it only shows one of them.
+        </p>
+    </article>
+    <article>
+        <h2>product</h2>
+        <p>"product" is a category exclusively for the product page</p>
+    </article>
+    <div id="testDiv"></div>
 </div>
 <script>
-    var request = require('request');
 
 
     function onSignIn(googleUser) {
@@ -101,6 +118,9 @@
         xhrn.send(
             "name="+document.getElementById('artName').value
         )
+    }
+    function testArticle() {
+        document.getElementById("testDiv").innerHTML += document.getElementById("article").value;
     }
 
 </script>
