@@ -10,12 +10,14 @@ const crypto = require('crypto');
 mongoose.connect('mongodb://localhost:27017/FIRE');
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var checkTokenRouter = require('./routes/checkToken');
 var loginRouter = require('./routes/login');
 var submitArticleRouter = require('./routes/submitArticle');
 var changeArticleCatRouter = require('./routes/changeArticleCategory');
 var deleteArticleRouter = require('./routes/deleteArticle');
 var getArticlesRouter = require('./routes/getArticles');
+var productsRouter = require('./routes/products');
+var stocksRouter = require('./routes/stocks');
 
 var adminRouter = require('./routes/admin');
 
@@ -44,12 +46,14 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', indexRouter);
-app.use('/users', usersRouter);
+app.use('/checkToken', checkTokenRouter);
 app.use('/login', loginRouter);
 app.use('/submitArticle', submitArticleRouter);
 app.use('/changeArticleCategory', changeArticleCatRouter);
 app.use('/deleteArticle', deleteArticleRouter);
-app.use('/getArticles', getArticlesRouter);
+app.use('/blog', getArticlesRouter);
+app.use('/products', productsRouter);
+app.use('/stocks', stocksRouter);
 
 
 

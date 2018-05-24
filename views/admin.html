@@ -59,7 +59,7 @@
     }
     function checkToken() {
         var xhrn = new XMLHttpRequest();
-        xhrn.open('GET', 'http://localhost:3000/users');
+        xhrn.open('GET', 'http://localhost:3000/checkToken');
         xhrn.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
         xhrn.onload = function() {
             alert(xhrn.responseText);

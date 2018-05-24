@@ -16,11 +16,12 @@ async function verify(token, res, req) {
     });
     const payload = ticket.getPayload();
     if (payload['aud'] === CLIENT_ID) {
+        var htmlHead = "";
         req.session.regenerate(function (err) {
             if (err) {
                 console.log(err)
             } else {
-                db.verifyUser(payload['sub'], payload['name'], req.sessionID, function (valid, err) {
+                db.verifyUser(payload['sub'], payload['name'], req.sessionID, req.headers["user-agent"], function (valid, err) {
                     if (valid) {
                         res.send(valid);
                     } else {
@@ -33,7 +34,7 @@ async function verify(token, res, req) {
                                 }
                             });
                         } else {
-                            db.saveUser(payload['sub'], payload['name'], payload['given_name'] + " " +payload['family_name'][0], req.sessionID, function (saved, err) {
+                            db.saveUser(payload['sub'], payload['name'], payload['given_name'] + " " +payload['family_name'][0], req.sessionID, req.headers["user-agent"], function (saved, err) {
                                 if (err) {
                                     console.log(err);
                                     res.send(false);

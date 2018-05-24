@@ -16,7 +16,7 @@ const verifyHash = function (name, user, id) {
 const User = require('./models/User');
 const Article = require('./models/Article');
 module.exports = {
-    saveUser: function (id, name, userName, sessionID, callback) {
+    saveUser: function (id, name, userName, sessionID, htmlHead, callback) {
         const salt = genSalt();
         const tenMin = new Date();
         tenMin.setMinutes(tenMin.getMinutes() + 10);
@@ -26,7 +26,8 @@ module.exports = {
             salt: salt,
             token: sessionID,
             expiration: tenMin,
-            username: userName
+            username: userName,
+            htmlHead: htmlHead
         });
         newUser.save(function (err) {
             if(err) {
@@ -37,7 +38,7 @@ module.exports = {
             callback(true, err);
         });
     },
-    verifyUser: function (id, name, sessionID, callback) {
+    verifyUser: function (id, name, sessionID, htmlHead, callback) {
         User.findOne({name: name}).exec(function (err, elem) {
             if(err) {
                 console.log(err);
@@ -50,6 +51,7 @@ module.exports = {
                         const tenMin = new Date();
                         tenMin.setMinutes(tenMin.getMinutes() + 10);
                         elem.expiration = tenMin;
+                        elem.htmlHead = htmlHead;
                         console.log("Verified: " + name + " with id:" + id);
                         elem.save();
 
@@ -62,12 +64,12 @@ module.exports = {
         });
     },
 
-    checkToken: function (token, callback) {
+    checkToken: function (token, htmlHead, callback) {
         User.findOne({token: token}).exec(function (err, elem) {
             if (err || elem === null) {
                 console.log(err);
                 callback(false, err);
-            } else if (elem.expiration > new Date()) {
+            } else if (elem.expiration > new Date() && htmlHead === elem.htmlHead) {
                 callback(true, err);
             } else {
                 elem.token = "";
@@ -79,12 +81,12 @@ module.exports = {
         })
     },
 
-    checkAdmin: function(token, callback) {
+    checkAdmin: function(token, htmlHead, callback) {
         User.findOne({token: token}).exec(function (err, elem) {
             if (err || elem === null) {
                 console.log(err);
                 callback(false, err);
-            } else if (elem.expiration > new Date()) {
+            } else if (elem.expiration > new Date() && htmlHead === elem.htmlHead) {
                 callback(elem.isAdmin, err);
             } else {
                 elem.token = "";
@@ -96,36 +98,26 @@ module.exports = {
         })
     },
     
-    storeArticle: function (body, name, category, token, callback) {
-        User.findOne({token: token}, function (err, elem) {
-            if (err || elem === null) {
-                console.log(err);
-                callback(false, err);
-            } else if (elem.expiration > new Date()) {
-                if (elem.isAdmin) {
-                    const newArticle = new Article({
-                        name: name,
-                        body: encodeURI(body),
-                        category: category,
-                        date: new Date()
-                    });
-                    newArticle.save(function (errr) {
-                        if (errr) {
-                            console.log(errr);
-                            callback(false, errr);
-                        } else {
-                            callback(true, errr);
-                        }
-                    })
-                } else {
-                    callback(false, err)
-                }
-            } else {
-                elem.token = "";
-                elem.expiration = new Date(0);
-                elem.save();
-                callback(false, err);
-            }
+    storeArticle: function (body, name, category, token, htmlHead, callback) {
+        module.exports.checkAdmin(token, htmlHead, function (isAdmin, err) {
+           if (err || !isAdmin) {
+               callback(false, err)
+           } else {
+               const newArticle = new Article({
+                   name: name,
+                   body: encodeURI(body),
+                   category: category,
+                   date: new Date()
+               });
+               newArticle.save(function (errr) {
+                   if (errr) {
+                       console.log(errr);
+                       callback(false, errr);
+                   } else {
+                       callback(true, errr);
+                   }
+               })
+           }
         });
     },
     
@@ -146,7 +138,14 @@ module.exports = {
                 console.log(err);
                 callback([]);
             } else {
-                callback(articles);
+                var toReturn = [];
+                articles.forEach(function (elem) {
+                    if (elem.category !== "home" && elem.category !== "stock") {
+                        elem.body = decodeURI(elem.body);
+                        toReturn.push(elem);
+                    }
+                });
+                callback(toReturn);
             }
         });
     },
@@ -157,61 +156,44 @@ module.exports = {
                console.log(err);
                callback([]);
            } else {
+               articles.forEach(function (elem) {
+                   elem.body = decodeURI(elem.body);
+               });
                callback(articles);
            }
         });
     },
-    changeArticleCategory: function (name, category, token, callback) {
-        User.findOne({token: token}, function (err, elem) {
-            if (err || elem === null) {
-                console.log(err);
-                callback(false, err);
-            } else if (elem.expiration > new Date()) {
-                if (elem.isAdmin) {
-                    Article.findOne({name: name}, function (err, elem) {
-                        if (err || elem === null) {
-                            console.log(err);
-                            callback(false, err);
-                        } else {
-                            elem.category = category;
-                            elem.save();
-                            callback(true, err);
-                        }
-                    });
-                } else {
-                    callback(false, err)
-                }
+    changeArticleCategory: function (name, category, token, htmlHead, callback) {
+        module.exports.checkAdmin(token, htmlHead, function (isAdmin, err) {
+            if (err || !isAdmin) {
+                callback(false, err)
             } else {
-                elem.token = "";
-                elem.expiration = new Date(0);
-                elem.save();
-                callback(false, err);
+                Article.findOne({name: name}, function (errr, elem) {
+                    if (errr || elem === null) {
+                        console.log(errr);
+                        callback(false, errr);
+                    } else {
+                        elem.category = category;
+                        elem.save();
+                        callback(true, errr);
+                    }
+                });
             }
         });
     },
-    deleteArticle: function (name, token, callback) {
-        User.findOne({token: token}, function (err, elem) {
-            if (err || elem === null) {
-                console.log(err);
-                callback(false, err);
-            } else if (elem.expiration > new Date()) {
-                if (elem.isAdmin) {
-                    Article.find({name: name}).remove(function (err) {
-                        if (err) {
-                            console.log(err);
-                            callback(false, err);
-                        } else {
-                            callback(true, err);
-                        }
-                    });
-                } else {
-                    callback(false, err)
-                }
+    deleteArticle: function (name, token, htmlHead, callback) {
+        module.exports.checkAdmin(token, htmlHead, function (isAdmin, err) {
+            if (err || !isAdmin) {
+                callback(false, err)
             } else {
-                elem.token = "";
-                elem.expiration = new Date(0);
-                elem.save();
-                callback(false, err);
+                Article.find({name: name}).remove(function (errr) {
+                    if (errr) {
+                        console.log(errr);
+                        callback(false, errr);
+                    } else {
+                        callback(true, errr);
+                    }
+                });
             }
         });
     }

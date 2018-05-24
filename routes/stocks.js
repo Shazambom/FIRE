@@ -5,16 +5,17 @@ const db = require('../database/database');
 /* GET home page. */
 
 router.get('/', function(req, res, next) {
-    db.getAllArticles(function (articles) {
-        var json = {};
+    db.getCategoryArticles('stock', function (articles) {
+        const json = {};
         articles.forEach(function (elem) {
             json[elem.name] = {
                 body: elem.body,
                 category: elem.category
             }
         });
-        res.render('home', {posts :json});
+        res.render('stocks', {posts :json});
     });
+    //res.render('stocks');
 });
 
 

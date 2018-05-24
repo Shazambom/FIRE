@@ -5,7 +5,7 @@ const db = require('../database/database');
 /* GET home page. */
 
 router.post('/', function(req, res, next) {
-    db.changeArticleCategory(req.body["name"], req.body["category"], req.sessionID, function (changed, err) {
+    db.changeArticleCategory(req.body["name"], req.body["category"], req.sessionID, req.headers["user-agent"], function (changed, err) {
         if (err) {
             console.log(err);
         } else if (changed) {

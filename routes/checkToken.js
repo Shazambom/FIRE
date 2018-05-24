@@ -5,7 +5,7 @@ const db = require('../database/database');
 /* GET users listing. */
 router.get('/', function(req, res, next) {
   console.log(req.sessionID);
-  db.checkToken(req.sessionID, function (valid, err) {
+  db.checkToken(req.sessionID, req.headers["user-agent"], function (valid, err) {
       if (err) {
         console.log(err);
       } else {
@@ -15,7 +15,7 @@ router.get('/', function(req, res, next) {
             res.send("Invalid token");
         }
       }
-  })
+  });
 });
 
 module.exports = router;

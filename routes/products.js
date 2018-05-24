@@ -5,8 +5,8 @@ const db = require('../database/database');
 /* GET home page. */
 
 router.get('/', function(req, res, next) {
-    db.getAllArticles(function (articles) {
-        var json = {};
+    db.getCategoryArticles('products', function (articles) {
+        const json = {};
         articles.forEach(function (elem) {
             json[elem.name] = {
                 body: elem.body,
@@ -15,6 +15,8 @@ router.get('/', function(req, res, next) {
         });
         res.render('home', {posts :json});
     });
+
+
 });
 
 

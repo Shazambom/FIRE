@@ -20,11 +20,23 @@
 <div class="topcorner">
     <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
 </div>
+<% include navigation %>
+
 <div id="articles">
-    <!--<%=articles%>-->
+    <h1>Articles</h1>
+    <% for(name in posts) { %>
+    <article>
+        <h2><%= name %></h2>
+        <p><%- posts[name].body %></p>
+    </article>
+    <% } %>
 </div>
+<% include footer %>
+
 
 <script>
+
+
 
     function onSignIn(googleUser) {
         // Useful data for your client-side scripts:

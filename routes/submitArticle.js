@@ -5,7 +5,7 @@ const db = require('../database/database');
 /* GET home page. */
 
 router.post('/', function(req, res, next) {
-    db.storeArticle(req.body["article"], req.body["name"], req.body["category"], req.sessionID, function (submited, err) {
+    db.storeArticle(req.body["article"], req.body["name"], req.body["category"], req.sessionID, req.headers["user-agent"], function (submited, err) {
         if (err) {
             console.log(err);
         } else if (submited) {

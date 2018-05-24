@@ -8,7 +8,8 @@ var userSchema = mongoose.Schema({
     token: String,
     expiration: Date,
     username: String,
-    isAdmin: Boolean
+    isAdmin: Boolean,
+    htmlHead: String
 });
 
 module.exports = mongoose.model('Users', userSchema);

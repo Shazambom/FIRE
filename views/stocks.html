@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <style type="text/css">
     .topcorner{
         position:absolute;
@@ -20,7 +19,26 @@
 <div class="topcorner">
     <div class="g-signin2" data-onsuccess="onSignIn" data-theme="dark"></div>
 </div>
+<% include navigation %>
+
+<%- include stockstemplate %>
+
+<div id="stocks">
+    <h1>Stocks We Like</h1>
+    <% for(name in posts) { %>
+    <article>
+        <h2><%= name %></h2>
+        <p><%- posts[name].body %></p>
+    </article>
+    <% } %>
+</div>
+
+<% include footer %>
+
+
 <script>
+
+
 
     function onSignIn(googleUser) {
         // Useful data for your client-side scripts:
@@ -38,6 +56,8 @@
         };
         xhr.send('idtoken=' + id_token);
     }
+
+
 </script>
 </body>
 </html>
