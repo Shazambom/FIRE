@@ -18,6 +18,7 @@ var deleteArticleRouter = require('./routes/deleteArticle');
 var getArticlesRouter = require('./routes/getArticles');
 var productsRouter = require('./routes/products');
 var stocksRouter = require('./routes/stocks');
+var profileRouter = require('./routes/profile');
 
 var adminRouter = require('./routes/admin');
 
@@ -54,6 +55,7 @@ app.use('/deleteArticle', deleteArticleRouter);
 app.use('/blog', getArticlesRouter);
 app.use('/products', productsRouter);
 app.use('/stocks', stocksRouter);
+app.use('/profile', profileRouter);
 
 
 

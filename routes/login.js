@@ -1,6 +1,5 @@
 const express = require('express');
 const db = require('../database/database');
-const crypto = require('crypto');
 const router = express.Router();
 const {OAuth2Client} = require('google-auth-library');
 const CLIENT_ID = '813941670344-9el2iuapfhtvv2gd1marealcu1on6u1e.apps.googleusercontent.com';
@@ -16,7 +15,6 @@ async function verify(token, res, req) {
     });
     const payload = ticket.getPayload();
     if (payload['aud'] === CLIENT_ID) {
-        var htmlHead = "";
         req.session.regenerate(function (err) {
             if (err) {
                 console.log(err)
@@ -53,7 +51,54 @@ async function verify(token, res, req) {
             }
         });
     }
+}
 
+async function verifyProfile(token, res, req, isGet) {
+    const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: CLIENT_ID
+    });
+    const payload = ticket.getPayload();
+    if (payload['aud'] === CLIENT_ID) {
+        var get = (isGet == "true");
+        if (get) {
+            db.getUserData(req.sessionID, req.headers['user-agent'], payload['sub'], function (userData, err) {
+                if (err) {
+                    res.status(403);
+                } else if (userData === null) {
+                    db.storeUserData(req.sessionID, req.headers['user-agent'], req.body['data'], payload['sub'], function (saved, err) {
+                        if (err || !saved) {
+                            res.status(403);
+                        } else {
+                            db.getUserData(req.sessionID, req.headers['user-agent'], payload['sub'], function (userData, err) {
+                                if (err || userData === null) {
+                                    res.status(403);
+                                } else {
+                                    res.send(JSON.stringify({data: userData}));
+                                }
+                            });
+                        }
+                    });
+                } else {
+                    res.send(JSON.stringify({data: userData}));
+                }
+            });
+        } else {
+            db.storeUserData(req.sessionID, req.headers['user-agent'], req.body['data'], payload['sub'], function (saved, err) {
+                if (err || !saved) {
+                    res.status(403);
+                } else {
+                    db.getUserData(req.sessionID, req.headers['user-agent'], payload['sub'], function (userData, err) {
+                        if (err || userData === null) {
+                            res.status(403);
+                        } else {
+                            res.send(JSON.stringify({data: userData}));
+                        }
+                    });
+                }
+            });
+        }
+    }
 }
 
 /* GET home page. */
@@ -64,6 +109,11 @@ router.post('/', function(req, res, next) {
     const token = req['body']['idtoken'];
     verify(token, res, req).catch(console.error);
 
+});
+
+router.post('/profile', function (req, res, next) {
+    console.log(req['body']['data']);
+    verifyProfile(req['body']['idtoken'], res, req, req['body']['isGet']);
 });
 
 
